@@ -1,3 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/DO288-apps/movies/Jenkinsfile.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,prevent_copy=">
+<meta name="colorscheme" content="none">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffff; }
+body { font-family: monospace; color: #000000; background-color: #ffffff; }
+* { font-size: 1em; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
 pipeline {
     options {
         // set a timeout of 60 minutes for this pipeline
@@ -12,13 +38,13 @@ pipeline {
 
     environment {
         //TODO: Customize these variables for your environment
-        DEV_PROJECT = "dimikhan-movies-dev"
-        STAGE_PROJECT = "dimikhan-movies-stage"
-        APP_GIT_URL = "https://github.com/dimikhan/DO288-apps"
-        NEXUS_SERVER = "http://nexus-common.apps.ap45.prod.nextcle.com/repository/java"
+        DEV_PROJECT = &quot;dimikhan-movies-dev&quot;
+        STAGE_PROJECT = &quot;dimikhan-movies-stage&quot;
+        APP_GIT_URL = &quot;<a href="https://github.com/dimikhan/DO288-apps">https://github.com/dimikhan/DO288-apps</a>&quot;
+        NEXUS_SERVER = &quot;<a href="http://nexus-common.apps.ap45.prod.nextcle.com/repository/java">http://nexus-common.apps.ap45.prod.nextcle.com/repository/java</a>&quot;
 
         // DO NOT CHANGE THE GLOBAL VARS BELOW THIS LINE
-        APP_NAME = "movies"
+        APP_NAME = &quot;movies&quot;
     }
 
 
@@ -78,14 +104,14 @@ pipeline {
                 script {
                     openshift.withCluster() {
                       openshift.withProject(env.DEV_PROJECT) {
-                        openshift.selector("bc", "${APP_NAME}").startBuild("--from-file=${APP_NAME}/target/${APP_NAME}.jar", "--wait=true", "--follow=true")
+                        openshift.selector(&quot;bc&quot;, &quot;${APP_NAME}&quot;).startBuild(&quot;--from-file=${APP_NAME}/target/${APP_NAME}.jar&quot;, &quot;--wait=true&quot;, &quot;--follow=true&quot;)
                       }
                     }
                 }
                 // TODO: Create a new OpenShift application based on the ${APP_NAME}:latest image stream
 sh '''
-oc new-app --as-deployment-config --name $APP_NAME -i ${APP_NAME}:latest -n ${DEV_PROJECT}
-oc expose svc/${APP_NAME} -n ${DEV_PROJECT}
+oc new-app --as-deployment-config --name $APP_NAME -i ${APP_NAME}:latest
+oc expose svc/${APP_NAME}
 '''
                 // TODO: Expose the ${APP_NAME} service for external access
             }
@@ -93,28 +119,16 @@ oc expose svc/${APP_NAME} -n ${DEV_PROJECT}
 
         stage('Wait for deployment in DEV env') {
             //TODO: Watch deployment until pod is in 'Running' state
-steps {
-  script {
-    openshift.withCluster() {
-      openshift.withProject( "${DEV_PROJECT}" ) {
-        openshift.selector("dc", "${APP_NAME}").related('pods').untilEach(1) {
-          return (it.object().status.phase == "Running")
-        }
-      }
-    }
-  }
-}
         }
 
         stage('Promote to Staging Env') {
             steps {
                 timeout(time: 60, unit: 'MINUTES') {
-                    input message: "Promote to Staging?"
+                    input message: &quot;Promote to Staging?&quot;
                 }
                 script {
                     openshift.withCluster() {
                     // TODO: Tag the ${APP_NAME}:latest image stream in the dev env as ${APP_NAME}:stage in staging
-openshift.tag("${DEV_PROJECT}/${APP_NAME}:latest","${SATGE_PROJECT}/${APP_NAME}:stage")
                     }
                 }
             }
@@ -131,32 +145,31 @@ openshift.tag("${DEV_PROJECT}/${APP_NAME}:latest","${SATGE_PROJECT}/${APP_NAME}:
 
                 echo '### Creating a new app in Staging ###'
                 // TODO: Create a new app in staging and expose the service
-sh '''
-oc project ${STAGE_PROJECT}
-oc new-app --as-deplyment-config --name ${APP_NAME} -i ${APP_NAME}:stage
-oc expose svc/${APP_NAME}
-'''
             }
         }
 
         stage('Wait for deployment in Staging') {
             steps {
-                sh "oc get route ${APP_NAME} -n ${STAGE_PROJECT} -o jsonpath='{ .spec.host }' --loglevel=4 > routehost"
+                sh &quot;oc get route ${APP_NAME} -n ${STAGE_PROJECT} -o jsonpath='{ .spec.host }' --loglevel=4 &gt; routehost&quot;
 
                 script {
                     routeHost = readFile('routehost').trim()
 
                     openshift.withCluster() {
-                        openshift.withProject( "${STAGE_PROJECT}" ) {
-                            def deployment = openshift.selector("dc", "${APP_NAME}").rollout()
-                            openshift.selector("dc", "${APP_NAME}").related('pods').untilEach(1) {
-                                return (it.object().status.phase == "Running")
+                        openshift.withProject( &quot;${STAGE_PROJECT}&quot; ) {
+                            def deployment = openshift.selector(&quot;dc&quot;, &quot;${APP_NAME}&quot;).rollout()
+                            openshift.selector(&quot;dc&quot;, &quot;${APP_NAME}&quot;).related('pods').untilEach(1) {
+                                return (it.object().status.phase == &quot;Running&quot;)
                             }
                         }
-                        echo "Deployment to Staging env is complete. Access the API endpoint at the URL http://${routeHost}/movies."
+                        echo &quot;Deployment to Staging env is complete. Access the API endpoint at the URL <a href="http://${routeHost}/movies.">http://${routeHost}/movies.</a>&quot;
                     }
                 }
             }
         }
     }
 }
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
